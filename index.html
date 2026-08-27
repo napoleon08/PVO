@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SEOUL SKY DEFENSE</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#02040a;
+    font-family:Arial,sans-serif;
+    color:white;
+}
+
+canvas{
+    display:block;
+}
+
+/* ================= HUD ================= */
+
+#hud{
+    position:fixed;
+    top:18px;
+    left:18px;
+    width:290px;
+    padding:18px;
+
+    background:rgba(3,7,14,.82);
+    border:1px solid rgba(100,190,255,.28);
+    border-radius:14px;
+
+    backdrop-filter:blur(12px);
+
+    z-index:10;
+
+    box-shadow:
+        0 0 35px rgba(0,0,0,.55);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    letter-spacing:4px;
+}
+
+.sub{
+    margin-top:5px;
+    color:#71869a;
+    font-size:9px;
+    letter-spacing:2px;
+}
+
+.line{
+    height:1px;
+    background:rgba(255,255,255,.1);
+    margin:14px 0;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin:8px 0;
+    font-size:13px;
+}
+
+.label{
+    color:#8292a2;
+}
+
+.green{
+    color:#52e99a;
+}
+
+.blue{
+    color:#5dc9ff;
+}
+
+.orange{
+    color:#ffb75d;
+}
+
+.red{
+    color:#ff6868;
+}
+
+/* ================= TITLE ================= */
+
+#mission{
+    position:fixed;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
+
+    padding:12px 28px;
+
+    background:rgba(0,0,0,.62);
+    border:1px solid rgba(120,200,255,.25);
+
+    border-radius:10px;
+
+    text-align:center;
+
+    z-index:10;
+}
+
+.small{
+    color:#75899b;
+    font-size:9px;
+    letter-spacing:3px;
+}
+
+.big{
+    margin-top:5px;
+    font-size:15px;
+    letter-spacing:2px;
+}
+
+/* ================= CROSSHAIR ================= */
+
+#crosshair{
+    position:fixed;
+
+    left:50%;
+    top:50%;
+
+    width:55px;
+    height:55px;
+
+    transform:translate(-50%,-50%);
+
+    border:1px solid rgba(80,210,255,.9);
+
+    border-radius:50%;
+
+    pointer-events:none;
+
+    z-index:8;
+
+    box-shadow:
+        0 0 15px rgba(50,180,255,.2);
+}
+
+#crosshair:before{
+    content:"";
+
+    position:absolute;
+
+    width:76px;
+    height:1px;
+
+    left:-11px;
+    top:27px;
+
+    background:#59cfff;
+}
+
+#crosshair:after{
+    content:"";
+
+    position:absolute;
+
+    width:1px;
+    height:76px;
+
+    left:27px;
+    top:-11px;
+
+    background:#59cfff;
+}
+
+/* ================= TARGET ================= */
+
+#target{
+    position:fixed;
+
+    left:50%;
+    top:calc(50% + 45px);
+
+    transform:translateX(-50%);
+
+    color:#68d0ff;
+
+    font-size:11px;
+    letter-spacing:2px;
+
+    z-index:8;
+
+    pointer-events:none;
+}
+
+/* ================= RADAR ================= */
+
+#radar{
+    position:fixed;
+
+    top:20px;
+    right:20px;
+
+    width:190px;
+    height:190px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(80,255,160,.45);
+
+    background:
+        radial-gradient(
+            circle,
+            transparent 0 24%,
+            rgba(70,255,160,.06) 25% 25.5%,
+            transparent 26% 49%,
+            rgba(70,255,160,.06) 50% 50.5%,
+            transparent 51%
+        );
+
+    z-index:10;
+}
+
+.radarSweep{
+    position:absolute;
+
+    width:50%;
+    height:1px;
+
+    left:50%;
+    top:50%;
+
+    transform-origin:left;
+
+    background:
+        linear-gradient(
+            90deg,
+            #50ff9e,
+            transparent
+        );
+
+    animation:
+        radar 2s linear infinite;
+}
+
+@keyframes radar{
+    from{
+        transform:rotate(0deg);
+    }
+
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* ================= WARNING ================= */
+
+#warning{
+    position:fixed;
+
+    left:50%;
+    top:90px;
+
+    transform:translateX(-50%);
+
+    display:none;
+
+    padding:10px 26px;
+
+    color:#ff7272;
+
+    background:rgba(80,0,0,.7);
+
+    border:1px solid #ff5555;
+
+    border-radius:8px;
+
+    font-size:12px;
+
+    letter-spacing:2px;
+
+    z-index:20;
+
+    animation:
+        warning .45s infinite alternate;
+}
+
+@keyframes warning{
+    from{
+        opacity:.45;
+    }
+
+    to{
+        opacity:1;
+    }
+}
+
+/* ================= CONTROLS ================= */
+
+#controls{
+    position:fixed;
+
+    bottom:18px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    padding:11px 22px;
+
+    background:rgba(0,0,0,.75);
+
+    border-radius:8px;
+
+    color:#899aa9;
+
+    font-size:12px;
+
+    z-index:10;
+}
+
+/* ================= STATUS ================= */
+
+#status{
+    position:fixed;
+
+    bottom:75px;
+    right:20px;
+
+    padding:10px 16px;
+
+    background:rgba(0,0,0,.72);
+
+    border:1px solid rgba(90,200,255,.2);
+
+    border-radius:8px;
+
+    color:#65caff;
+
+    font-size:12px;
+
+    z-index:10;
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+
+    <div class="logo">
+        SEOUL SKY DEFENSE
+    </div>
+
+    <div class="sub">
+        NIGHT CITY SIMULATION
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span class="label">Система</span>
+        <b class="green">ONLINE</b>
+    </div>
+
+    <div class="row">
+        <span class="label">Комплекс</span>
+        <b>PANTHER-A</b>
+    </div>
+
+    <div class="row">
+        <span class="label">Перехватчики</span>
+        <b class="orange" id="ammo">30</b>
+    </div>
+
+    <div class="row">
+        <span class="label">Целей в небе</span>
+        <b class="red" id="targets">0</b>
+    </div>
+
+    <div class="row">
+        <span class="label">Перехвачено</span>
+        <b class="green" id="hits">0</b>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span class="label">Волна</span>
+        <b id="wave">1</b>
+    </div>
+
+    <div class="row">
+        <span class="label">Счёт</span>
+        <b id="score">0</b>
+    </div>
+
+</div>
+
+
+<div id="mission">
+
+    <div class="small">
+        SEOUL — NIGHT SKY
+    </div>
+
+    <div class="big">
+        AIRSPACE DEFENSE SIMULATION
+    </div>
+
+</div>
+
+
+<div id="radar">
+    <div class="radarSweep"></div>
+</div>
+
+
+<div id="warning">
+    ⚠ AIRBORNE OBJECTS DETECTED
+</div>
+
+
+<div id="crosshair"></div>
+
+<div id="target">
+    MOVE MOUSE TO AIM
+</div>
+
+
+<div id="status">
+    TRACKING: ACTIVE
+</div>
+
+
+<div id="controls">
+    МЫШЬ — прицел |
+    SPACE — перехватчик |
+    R — перезапуск волны
+</div>
+
+
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+
+/* =========================================================
+   SCENE
+========================================================= */
+
+const scene =
+    new THREE.Scene();
+
+scene.background =
+    new THREE.Color(
+        0x02040b
+    );
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+const camera =
+    new THREE.PerspectiveCamera(
+        62,
+        innerWidth/
+        innerHeight,
+        .1,
+        4000
+    );
+
+camera.position.set(
+    0,
+    25,
+    80
+);
+
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias:true
+    });
+
+renderer.setPixelRatio(
+    Math.min(
+        devicePixelRatio,
+        2
+    )
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.shadowMap.enabled=true;
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/* =========================================================
+   LIGHTING
+========================================================= */
+
+scene.add(
+    new THREE.AmbientLight(
+        0x506078,
+        .6
+    )
+);
+
+const moon =
+    new THREE.DirectionalLight(
+        0x9bbcff,
+        1.5
+    );
+
+moon.position.set(
+    -300,
+    400,
+    100
+);
+
+scene.add(
+    moon
+);
+
+
+/* =========================================================
+   STARS
+========================================================= */
+
+const starPositions=[];
+
+for(
+    let i=0;
+    i<5000;
+    i++
+){
+
+    starPositions.push(
+        (Math.random()-.5)*2500,
+        Math.random()*1200,
+        -Math.random()*2000
+    );
+
+}
+
+const starGeo =
+    new THREE.BufferGeometry();
+
+starGeo.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(
+        starPositions,
+        3
+    )
+);
+
+const starMat =
+    new THREE.PointsMaterial({
+        color:0xffffff,
+        size:.7
+    });
+
+scene.add(
+    new THREE.Points(
+        starGeo,
+        starMat
+    )
+);
+
+
+/* =========================================================
+   CITY GROUND
+========================================================= */
+
+const ground =
+    new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            1200,
+            1200
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color:0x10141a,
+            roughness:1
+        })
+
+    );
+
+ground.rotation.x=
+    -Math.PI/2;
+
+ground.position.y=-2;
+
+ground.receiveShadow=true;
+
+scene.add(
+    ground
+);
+
+
+/* =========================================================
+   CITY BUILDINGS
+========================================================= */
+
+function createBuilding(
+    x,
+    z,
+    w,
+    h,
+    d
+){
+
+    const building =
+        new THREE.Group();
+
+    building.position.set(
+        x,
+        h/2-2,
+        z
+    );
+
+
+    const body =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                w,
+                h,
+                d
+            ),
+
+            new THREE.MeshStandardMaterial({
+                color:
+                    new THREE.Color(
+                        .08,
+                        .09,
+                        .11
+                    ),
+                roughness:.85,
+                metalness:.15
+            })
+
+        );
+
+    body.castShadow=true;
+
+    building.add(
+        body
+    );
+
+
+    /* windows */
+
+    const windowMat =
+        new THREE.MeshBasicMaterial({
+            color:0xffd889
+        });
+
+
+    const countX =
+        Math.max(
+            1,
+            Math.floor(w/3)
+        );
+
+    const countY =
+        Math.max(
+            1,
+            Math.floor(h/4)
+        );
+
+
+    for(
+        let ix=0;
+        ix<countX;
+        ix++
+    ){
+
+        for(
+            let iy=0;
+            iy<countY;
+            iy++
+        ){
+
+            if(
+                Math.random()<.35
+            )
+                continue;
+
+            const window =
+                new THREE.Mesh(
+
+                    new THREE.PlaneGeometry(
+                        .45,
+                        .65
+                    ),
+
+                    windowMat
+
+                );
+
+            window.position.set(
+
+                -w/2+
+                1.2+
+                ix*3,
+
+                -h/2+
+                2+
+                iy*4,
+
+                d/2+.02
+
+            );
+
+            body.add(
+                window
+            );
+
+        }
+
+    }
+
+    scene.add(
+        building
+    );
+
+}
+
+
+/* city */
+
+for(
+    let i=0;
+    i<140;
+    i++
+){
+
+    const x=
+        (Math.random()-.5)*
+        700;
+
+    const z=
+        -Math.random()*600;
+
+    const h=
+        10+
+        Math.random()*65;
+
+    const w=
+        8+
+        Math.random()*18;
+
+    const d=
+        8+
+        Math.random()*18;
+
+    createBuilding(
+        x,
+        z,
+        w,
+        h,
+        d
+    );
+
+}
+
+
+/* =========================================================
+   LOTTE WORLD TOWER STYLE LANDMARK
+========================================================= */
+
+const tower =
+    new THREE.Group();
+
+tower.position.set(
+    0,
+    0,
+    -300
+);
+
+scene.add(
+    tower
+);
+
+
+/* main tower */
+
+const towerGeo =
+    new THREE.CylinderGeometry(
+        18,
+        31,
+        240,
+        32
+    );
+
+const towerMat =
+    new THREE.MeshStandardMaterial({
+        color:0x9da8b0,
+        metalness:.65,
+        roughness:.25
+    });
+
+const towerBody =
+    new THREE.Mesh(
+        towerGeo,
+        towerMat
+    );
+
+towerBody.castShadow=true;
+
+tower.add(
+    towerBody
+);
+
+
+/* glass strips */
+
+for(
+    let i=0;
+    i<8;
+    i++
+){
+
+    const strip =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                .8,
+                230,
+                28
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0x6e91ad,
+                transparent:true,
+                opacity:.45
+            })
+
+        );
+
+    strip.rotation.y=
+        i*Math.PI/4;
+
+    tower.add(
+        strip
+    );
+
+}
+
+
+/* top spire */
+
+const spire =
+    new THREE.Mesh(
+
+        new THREE.ConeGeometry(
+            9,
+            75,
+            32
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color:0xbfc8ce,
+            metalness:.7,
+            roughness:.2
+        })
+
+    );
+
+spire.position.y=157;
+
+tower.add(
+    spire
+);
+
+
+/* tower lights */
+
+for(
+    let y=-100;
+    y<130;
+    y+=12
+){
+
+    const light =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                28,
+                .18,
+                28
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0x789bb8,
+                transparent:true,
+                opacity:.13
+            })
+
+        );
+
+    light.position.y=y;
+
+    tower.add(
+        light
+    );
+
+}
+
+
+/* =========================================================
+   PANTHER-A AIR DEFENSE VEHICLE
+========================================================= */
+
+const defense =
+    new THREE.Group();
+
+defense.position.set(
+    70,
+    0,
+    -20
+);
+
+scene.add(
+    defense
+);
+
+
+/* wheels */
+
+for(
+    let i=-1;
+    i<=1;
+    i+=2
+){
+
+    for(
+        let side=-1;
+        side<=1;
+        side+=2
+    ){
+
+        const wheel =
+            new THREE.Mesh(
+
+                new THREE.CylinderGeometry(
+                    2.2,
+                    2.2,
+                    1.2,
+                    20
+                ),
+
+                new THREE.MeshStandardMaterial({
+                    color:0x16191c,
+                    roughness:.8
+                })
+
+            );
+
+        wheel.rotation.z=
+            Math.PI/2;
+
+        wheel.position.set(
+            i*5,
+            2.2,
+            side*4.5
+        );
+
+        defense.add(
+            wheel
+        );
+
+    }
+
+}
+
+
+/* chassis */
+
+const chassis =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            14,
+            4,
+            9
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color:0x35404a,
+            metalness:.6,
+            roughness:.5
+        })
+
+    );
+
+chassis.position.y=4;
+
+chassis.castShadow=true;
+
+defense.add(
+    chassis
+);
+
+
+/* turret */
+
+const turret =
+    new THREE.Group();
+
+turret.position.y=7;
+
+defense.add(
+    turret
+);
+
+
+const turretBody =
+    new THREE.Mesh(
+
+        new THREE.CylinderGeometry(
+            3.8,
+            4.4,
+            3,
+            24
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color:0x46515a,
+            metalness:.7,
+            roughness:.4
+        })
+
+    );
+
+turret.add(
+    turretBody
+);
+
+
+/* launcher tubes */
+
+for(
+    let i=-1;
+    i<=1;
+    i+=2
+){
+
+    const tube =
+        new THREE.Mesh(
+
+            new THREE.CylinderGeometry(
+                .55,
+                .55,
+                9,
+                16
+            ),
+
+            new THREE.MeshStandardMaterial({
+                color:0x1c252c,
+                metalness:.7
+            })
+
+        );
+
+    tube.rotation.z=
+        Math.PI/2;
+
+    tube.position.set(
+        i*4,
+        2,
+        0
+    );
+
+    turret.add(
+        tube
+    );
+
+}
+
+
+/* radar */
+
+const radar =
+    new THREE.Mesh(
+
+        new THREE.CylinderGeometry(
+            3.5,
+            3.5,
+            .3,
+            32
+        ),
+
+        new THREE.MeshBasicMaterial({
+            color:0x63d6ff
+        })
+
+    );
+
+radar.position.y=11;
+
+defense.add(
+    radar
+);
+
+
+/* =========================================================
+   BALLOONS
+========================================================= */
+
+const balloons=[];
+const interceptors=[];
+
+let wave=1;
+let score=0;
+let hits=0;
+let ammo=30;
+
+
+/* balloon texture */
+
+function createBalloon(){
+
+    const group =
+        new THREE.Group();
+
+
+    /* transparent balloon */
+
+    const balloon =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                4,
+                24,
+                18
+            ),
+
+            new THREE.MeshPhysicalMaterial({
+                color:0x765034,
+                transparent:true,
+                opacity:.72,
+                roughness:.15,
+                transmission:.25
+            })
+
+        );
+
+    group.add(
+        balloon
+    );
+
+
+    /*
+       brown contents
+    */
+
+    const contents =
+        new THREE.Mesh(
+
+            new THREE.SphereGeometry(
+                2.7,
+                20,
+                16
+            ),
+
+            new THREE.MeshStandardMaterial({
+                color:0x4b2a17,
+                roughness:1
+            })
+
+        );
+
+    contents.position.y=-.5;
+
+    group.add(
+        contents
+    );
+
+
+    /* string */
+
+    const string =
+        new THREE.Mesh(
+
+            new THREE.CylinderGeometry(
+                .035,
+                .035,
+                7,
+                6
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0x302820
+            })
+
+        );
+
+    string.position.y=-5;
+
+    group.add(
+        string
+    );
+
+
+    /* basket */
+
+    const basket =
+        new THREE.Mesh(
+
+            new THREE.BoxGeometry(
+                1.8,
+                1.1,
+                1.8
+            ),
+
+            new THREE.MeshStandardMaterial({
+                color:0x463225
+            })
+
+        );
+
+    basket.position.y=-8.2;
+
+    group.add(
+        basket
+    );
+
+
+    group.position.set(
+
+        (Math.random()-.5)*260,
+
+        90+
+        Math.random()*90,
+
+        -180-
+        Math.random()*220
+
+    );
+
+
+    scene.add(
+        group
+    );
+
+
+    balloons.push({
+
+        mesh:group,
+
+        speed:
+            .12+
+            Math.random()*.1,
+
+        alive:true
+
+    });
+
+}
+
+
+/* =========================================================
+   SPAWN WAVE
+========================================================= */
+
+function spawnWave(){
+
+    for(
+        let i=0;
+        i<3;
+        i++
+    ){
+
+        setTimeout(
+            createBalloon,
+            i*700
+        );
+
+    }
+
+    wave++;
+
+}
+
+
+/* first wave */
+
+spawnWave();
+
+
+/* every 10 sec */
+
+setInterval(
+    spawnWave,
+    10000
+);
+
+
+/* =========================================================
+   MOUSE
+========================================================= */
+
+const mouse =
+    new THREE.Vector2(
+        0,
+        0
+    );
+
+addEventListener(
+    "mousemove",
+    e=>{
+
+        mouse.x=
+            e.clientX/
+            innerWidth*
+            2-
+            1;
+
+        mouse.y=
+            -(e.clientY/
+            innerHeight*
+            2-
+            1);
+
+    }
+);
+
+
+/* =========================================================
+   SHOOT
+========================================================= */
+
+addEventListener(
+    "keydown",
+    e=>{
+
+        if(
+            e.code==="Space"
+        ){
+
+            e.preventDefault();
+
+            shoot();
+
+        }
+
+
+        if(
+            e.key.toLowerCase()==="r"
+        ){
+
+            spawnWave();
+
+        }
+
+    }
+);
+
+
+function shoot(){
+
+    if(
+        ammo<=0
+    )
+        return;
+
+
+    ammo--;
+
+
+    /*
+       игровой луч от камеры
+    */
+
+    const raycaster =
+        new THREE.Raycaster();
+
+    raycaster.setFromCamera(
+        mouse,
+        camera
+    );
+
+
+    /*
+       ищем ближайший шар
+    */
+
+    let best=null;
+    let bestDistance=Infinity;
+
+    for(
+        const b of balloons
+    ){
+
+        if(
+            !b.alive
+        )
+            continue;
+
+        const point =
+            b.mesh.position.clone();
+
+        const direction =
+            raycaster.ray.direction;
+
+        const origin =
+            raycaster.ray.origin;
+
+        const toPoint =
+            point.clone()
+            .sub(origin);
+
+        const projection =
+            toPoint.dot(
+                direction
+            );
+
+        if(
+            projection<0
+        )
+            continue;
+
+        const closest =
+            origin.clone()
+            .add(
+                direction.clone()
+                .multiplyScalar(
+                    projection
+                )
+            );
+
+        const distance =
+            closest.distanceTo(
+                point
+            );
+
+        if(
+            distance<14 &&
+            projection<bestDistance
+        ){
+
+            best=b;
+            bestDistance=projection;
+
+        }
+
+    }
+
+
+    /*
+       interceptor visual
+    */
+
+    const missile =
+        new THREE.Mesh(
+
+            new THREE.CylinderGeometry(
+                .18,
+                .18,
+                3,
+                10
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color:0xddeeff
+            })
+
+        );
+
+    missile.position.set(
+        defense.position.x,
+        10,
+        defense.position.z
+    );
+
+    scene.add(
+        missile
+    );
+
+
+    interceptors.push({
+
+        mesh:missile,
+
+        target:best,
+
+        direction:
+            raycaster.ray.direction
+            .clone(),
+
+        life:180
+
+    });
+
+}
+
+
+/* =========================================================
+   UPDATE
+========================================================= */
+
+function update(){
+
+    /*
+       tower and city ambience
+    */
+
+    radar.rotation.y+=.015;
+
+
+    /*
+       balloons
+    */
+
+    for(
+        const b of balloons
+    ){
+
+        if(
+            !b.alive
+        )
+            continue;
+
+        b.mesh.position.x+=
+            Math.sin(
+                performance.now()*.0005+
+                b.mesh.position.z
+            )*.035;
+
+        b.mesh.position.z+=
+            b.speed;
+
+        b.mesh.rotation.y+=.003;
+
+    }
+
+
+    /*
+       interceptors
+    */
+
+    for(
+        let i=interceptors.length-1;
+        i>=0;
+        i--
+    ){
+
+        const missile =
+            interceptors[i];
+
+
+        if(
+            missile.target &&
+            missile.target.alive
+        ){
+
+            const target =
+                missile.target.mesh.position;
+
+            const direction =
+                target.clone()
+                .sub(
+                    missile.mesh.position
+                )
+                .normalize();
+
+            missile.mesh.position.add(
+                direction.multiplyScalar(
+                    3.8
+                )
+            );
+
+
+            if(
+                missile.mesh.position
+                .distanceTo(
+                    target
+                )<6
+            ){
+
+                destroyBalloon(
+                    missile.target
+                );
+
+                scene.remove(
+                    missile.mesh
+                );
+
+                interceptors.splice(
+                    i,
+                    1
+                );
+
+                continue;
+
+            }
+
+        }else{
+
+            missile.mesh.position.add(
+                missile.direction
+                .clone()
+                .multiplyScalar(
+                    3
+                )
+            );
+
+        }
+
+
+        missile.life--;
+
+        if(
+            missile.life<=0
+        ){
+
+            scene.remove(
+                missile.mesh
+            );
+
+            interceptors.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+
+    /*
+       camera aiming
+    */
+
+    const targetX=
+        mouse.x*70;
+
+    const targetY=
+        30+
+        mouse.y*35;
+
+    camera.lookAt(
+        targetX,
+        targetY,
+        -180
+    );
+
+
+    /*
+       HUD
+    */
+
+    document.getElementById(
+        "ammo"
+    ).textContent=
+        ammo;
+
+    document.getElementById(
+        "targets"
+    ).textContent=
+        balloons.filter(
+            b=>b.alive
+        ).length;
+
+    document.getElementById(
+        "hits"
+    ).textContent=
+        hits;
+
+    document.getElementById(
+        "wave"
+    ).textContent=
+        wave;
+
+    document.getElementById(
+        "score"
+    ).textContent=
+        score;
+
+
+    document.getElementById(
+        "warning"
+    ).style.display=
+        balloons.some(
+            b=>b.alive
+        )
+        ? "block"
+        : "none";
+
+}
+
+
+/* =========================================================
+   DESTROY BALLOON
+========================================================= */
+
+function destroyBalloon(
+    balloon
+){
+
+    if(
+        !balloon.alive
+    )
+        return;
+
+    balloon.alive=false;
+
+    balloon.mesh.visible=false;
+
+    hits++;
+
+    score+=100;
+
+
+    /*
+       simple explosion particles
+    */
+
+    for(
+        let i=0;
+        i<20;
+        i++
+    ){
+
+        const particle =
+            new THREE.Mesh(
+
+                new THREE.SphereGeometry(
+                    .15,
+                    6,
+                    6
+                ),
+
+                new THREE.MeshBasicMaterial({
+                    color:0xff9b4a
+                })
+
+            );
+
+        particle.position.copy(
+            balloon.mesh.position
+        );
+
+        particle.userData.velocity =
+            new THREE.Vector3(
+                (Math.random()-.5)*.8,
+                (Math.random()-.5)*.8,
+                (Math.random()-.5)*.8
+            );
+
+        scene.add(
+            particle
+        );
+
+        setTimeout(
+            ()=>{
+                scene.remove(
+                    particle
+                );
+            },
+            800
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+    update();
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+animate();
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+addEventListener(
+    "resize",
+    ()=>{
+
+        camera.aspect=
+            innerWidth/
+            innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+
+    }
+);
+
+</script>
+
+</body>
+</html>
